@@ -1,0 +1,3 @@
+CHANGES IN divergingPips 0.1:
+
+  * Initial version. Single function: diverging_pip_plot (see examples)

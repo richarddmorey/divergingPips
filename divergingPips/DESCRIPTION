@@ -1,0 +1,9 @@
+Package: divergingPips
+Type: Package
+Title: Create Diverging Pip Bar Plots
+Version: 0.1
+Date: 2015-12-15
+Author: Richard D. Morey
+Maintainer: Richard D. Morey <richarddmorey@gmail.com>
+Description: Create diverging pip bar plots for the direct comparison of frequencies across two groups.
+License: MIT + file LICENSE
