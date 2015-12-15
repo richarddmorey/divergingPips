@@ -6,7 +6,7 @@ To install, use the `devtools` package:
     
     install.packages('devtools') # if necessary
      
-    devtools::install_github("richarddmorey/divergingPips")
+    devtools::install_github("richarddmorey/divergingPips", subdir = "divergingPips")
 
 Then run the examples:
     
