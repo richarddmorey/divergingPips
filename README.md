@@ -1,6 +1,22 @@
 # divergingPips
+
+### Description
+
 R package for creation of "diverging pip" plots
 
+I designed these figures to help identify imbalances between two groups where both percentages and raw frequencies were important. For instance, if one sees a 70/30 split between two groups with 300 people, this might be a problem; but if the number of people is 10, that is less of a problem. Typical plots will show percentages with numerical frequencies added; these plots are confusing and don't represent the data very well. 
+
+There are four kinds of plots currently supported: plain, side-by-side, stacked, and histogram-style.
+![Example figure](http://richarddmorey.org/images/div_pips_all.png)
+
+| Type | Example use          |
+| ------------- | ----------- |
+| plain      | Show group balance across time. |
+| side-by-side     | Compare group balance across time between two or more populations |
+| stacked     | Compare group balance in, say, turnover across time |
+| hisstogram-style     | Compare group balance in distribution of ordinal variable (e.g., grades) |
+
+### How to use
 
 To install, use the `devtools` package:
     
