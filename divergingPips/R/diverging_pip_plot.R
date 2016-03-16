@@ -15,6 +15,9 @@
 #' @param sym Should the y axis by symmetric around 0?
 #' @param cluster.width For side-by-side plots, width of all bars together in x axis units
 #' @param panel.lty The line type for dividing lines across bars/clusters
+#' @param add.pct Add percentages to tops of bars? (for non-stacked plots)
+#' @param pct.round number of decimal places to round percentages to
+#' @param pct.cex The magnification of the pct labels relative to par(cex.axis)
 #' @param stacked If TRUE, create a stacked bar plot (see details)
 #' @param hist If TRUE, create a histogram-style bar chart (see details)
 #' @param top.cex The magnification of the top labels relative to par(cex.axis)
@@ -74,11 +77,29 @@ diverging_pip_plot <- function(ns, bar.width = .3,
                             bar.col = c("red", "blue"),
                             xlab="", box=TRUE, tick.every=5, sym=FALSE,
                             cluster.width=.3, panel.lty=0,
+                            add.pct = FALSE, pct.round = 0,
+                            pct.cex = 1,
                             stacked=FALSE, hist=FALSE,top.cex = 1)
 {
   
   if(length(dim(ns))>2){
     bar.col = matrix(bar.col,2,dim(ns)[3])
+  }
+  
+  if(add.pct){
+    if(stacked){
+      stop("Percentages can only be added for non-stacked plots.")
+    }
+    if(hist){
+      pcts = apply(ns,1:2,sum)
+      pcts = apply(ns,3,function(m) round(100*(m/pcts),pct.round))
+      dim(pcts) = c(2,dim(pcts)[1]/2,dim(pcts)[2])
+      dimnames(pcts) = dimnames(ns)
+    }else{
+      pcts = apply(ns,c(1:length(dim(ns)))[-1],function(v) round(100*v/sum(v),pct.round))
+    }
+  }else{
+    pcts = NULL
   }
   
   if(length(ns)==2) ns = matrix(ns,2,1)
@@ -105,7 +126,11 @@ diverging_pip_plot <- function(ns, bar.width = .3,
       ymax = rev(apply( ceiling(ns/bar.width.n), 1, max ))
     }
   }
-  ylims = c(-1,1)*ymax*1.05
+  if(add.pct){
+    ylims = c(-1,1)*ymax*1.15
+  }else{
+    ylims = c(-1,1)*ymax*1.05
+  }
   
   if(side.by.side){
     xlims = c(.5, ncol(ns) + .5)
@@ -125,7 +150,8 @@ diverging_pip_plot <- function(ns, bar.width = .3,
                 line.col, 
                 bar.col,
                 hist = hist, line.wd = line.wd, 
-                top.cex = top.cex)
+                pct = pcts[,i,],
+                top.cex = top.cex, pct.cex = pct.cex)
       }else{
         for(j in 0:(n.in.cluster-1)){
           add.pip.bar(i - cluster.width/2 + j*cluster.width/(n.in.cluster-1),
@@ -133,7 +159,8 @@ diverging_pip_plot <- function(ns, bar.width = .3,
                   bar.width.n, 
                   line.col, 
                   bar.col[,j+1],
-                  line.wd = line.wd, top.cex = top.cex)
+                  pct = pcts[,i,j+1],
+                  line.wd = line.wd, top.cex = top.cex, pct.cex = pct.cex)
           text(i - cluster.width/2 + j*cluster.width/(n.in.cluster-1),
                par()$usr[4],
                dimnames(ns)[[3]][j+1],cex=par()$cex.axis*top.cex,adj=c(.5,1.2))
@@ -144,7 +171,8 @@ diverging_pip_plot <- function(ns, bar.width = .3,
               bar.width.n, 
               line.col, 
               bar.col,
-              line.wd = line.wd, top.cex = top.cex)
+              pct = pcts[,i],
+              line.wd = line.wd, top.cex = top.cex, pct.cex = pct.cex)
     }
   } 
   axis(1,at=1:ncol(ns),labels=colnames(ns),tick = FALSE)

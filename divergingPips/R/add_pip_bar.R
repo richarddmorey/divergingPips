@@ -6,6 +6,8 @@
 #' @param bar.width.n The number of columns of pips to break the bars into
 #' @param line.col A vector of length 2 giving the colors of the pip lines for the top and bottom bars
 #' @param hist Create histogram-style bars?
+#' @param pct percentage to add to top of bar (for non-stacked plots)
+#' @param pct.cex The magnification of the pct labels relative to par(cex.axis)
 #' @param bar.col A vector or array giving the colors of the bars (see details)
 #' @param line.wd Width of the pip lines
 #' @param top.cex The magnification of the top labels relative to par(cex.axis)
@@ -17,7 +19,8 @@ add.pip.bar <- function(x, ns,
                          bar.width.n = 2, 
                          line.col = c("white", "white"), 
                          bar.col = c("red", "blue"),
-                         hist = FALSE, line.wd = 1, 
+                         hist = FALSE, pct = NULL, 
+                         pct.cex = 1, line.wd = 1, 
                          top.cex = top.cex, ...)
 {
   
@@ -31,6 +34,8 @@ add.pip.bar <- function(x, ns,
                              bar.width.n, 
                              line.col, bar.col,
                              line.wd = line.wd,
+                             pct = pct,
+                             pct.cex = pct.cex,
                              top.cex = top.cex, ...))
   } 
   
@@ -62,8 +67,18 @@ add.pip.bar <- function(x, ns,
       x.c = c(x.c[1],  rep(x.c[-c(1,bar.width.n+1)],each=2) ,x.c[bar.width.n+1])
       x.c = c(x.c,rev(x.c))
       polygon(x.c,y.c,border=line.col[i],col=bar.col[i,j], lwd = line.wd)
+      # Add percentage
+      if(!is.null(pct)){
+        if(i == 1){
+          text(mean(range(x.c)),max(y.c), paste(pct[i],"%",sep=""),adj=c(.5,-.5), cex = pct.cex)
+        }else{
+          text(mean(range(x.c)),min(y.c), paste(pct[i],"%",sep=""),adj=c(.5,1.5), cex = pct.cex)
+        }
+      }
     }
   }
+  
+  
   
   for(i in 1:2){
     ## Draw segments
@@ -100,7 +115,6 @@ add.pip.bar <- function(x, ns,
 
 
 
-
 #' Add a histogram-style series of pip bars to a plot 
 #'
 #' @param x array of x axis values where to center the bars
@@ -108,6 +122,8 @@ add.pip.bar <- function(x, ns,
 #' @param bar.width The width of a bar in x units
 #' @param bar.width.n The number of columns of pips to break the bars into
 #' @param line.col A vector of length 2 giving the colors of the pip lines for the top and bottom bars
+#' @param pct percentage to add to top of bar
+#' @param pct.cex The magnification of the pct labels relative to par(cex.axis)
 #' @param line.wd Width of the pip lines
 #' @param bar.col A vector or array giving the colors of the bars (see details)
 #' @param top.cex The magnification of the top labels relative to par(cex.axis)
@@ -119,6 +135,7 @@ add.pip.bar.hist <- function(x, ns,
                               bar.width.n = 2, 
                               line.col = c("white", "white"), 
                               bar.col = c("red", "blue"),
+                              pct = NULL, pct.cex = 1,
                               line.wd = 1, 
                               top.cex = 1, ...)
 {
@@ -161,6 +178,14 @@ add.pip.bar.hist <- function(x, ns,
       x.c = c(x.c[1],  rep(x.c[-c(1,bar.width.n+1)],each=2) ,x.c[bar.width.n+1])
       x.c = c(x.c,rev(x.c))
       polygon(x.c,y.c,border=line.col[i],col=bar.col[i,j], lwd = line.wd)
+      # Add percentage
+      if(!is.null(pct)){
+        if(i == 1){
+          text(mean(range(x.c)),max(y.c), paste(pct[i,j],"%",sep=""),adj=c(.5,-.5), cex = pct.cex)
+        }else{
+          text(mean(range(x.c)),min(y.c), paste(pct[i,j],"%",sep=""),adj=c(.5,1.5), cex = pct.cex)
+        }
+      }
       
       # Draw segments
       for(k in 1:(bar.width.n-1)){
