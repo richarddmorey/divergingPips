@@ -11,6 +11,7 @@
 #' @param bar.col A vector or array giving the colors of the bars (see details)
 #' @param line.wd Width of the pip lines
 #' @param top.cex The magnification of the top labels relative to par(cex.axis)
+#' @param scale.to for percentage bars, N to which to normalize
 #' @param ... Unused additional arguments
 #'
 #' @return Returns NULL invisibly.
@@ -21,13 +22,19 @@ add.pip.bar <- function(x, ns,
                          bar.col = c("red", "blue"),
                          hist = FALSE, pct = NULL, 
                          pct.cex = 1, line.wd = 1, 
-                         top.cex = top.cex, ...)
+                         top.cex = top.cex, scale.to = NULL, ...)
 {
   
   if(length(dim(ns))!=2){
     dim(ns) = c(2,length(ns)/2)
   }
   
+  if(!is.null(scale.to) & !is.na(scale.to)){
+    if(any( (ns > 1) | (ns < 0) )){
+      stop("For percentage bars, data must be proportions.")
+    }
+  }
+
   if(hist & dim(ns)[2]>1){
     return(add.pip.bar.hist(x, ns, 
                              bar.width,
@@ -57,16 +64,22 @@ add.pip.bar <- function(x, ns,
       if(ns[i,j]==0){
         next
       }
-      idx = c(0,cumsum(ns[i,]))[j:(j+1)] + c(1,0)
-      bar.matrix[idx[1]:idx[2]]=j
-      y.b = apply(bar.matrix==j,1,function(v) range(which(v))) - c(1,0)
-      y.b[is.infinite(y.b)]=0
-      y.b = c(y.b[1,], rev(y.b[2,]))
-      y.c = 2*(2 - i - .5)*rep(y.b,each=2)
-      x.c = seq(x - bar.width/2, x + bar.width/2, bar.width/bar.width.n)
-      x.c = c(x.c[1],  rep(x.c[-c(1,bar.width.n+1)],each=2) ,x.c[bar.width.n+1])
-      x.c = c(x.c,rev(x.c))
-      polygon(x.c,y.c,border=line.col[i],col=bar.col[i,j], lwd = line.wd)
+      if(!is.null(scale.to) & !is.na(scale.to)){
+        x.c = c( x - bar.width/2, x + bar.width/2 )
+        y.c = c(0, ns[i] * scale.to / bar.width.n ) * 2*(2 - i - .5)
+        rect(x.c[1], y.c[1], x.c[2], y.c[2], border=line.col[i],col=bar.col[i,j], lwd = line.wd )
+      }else{
+        idx = c(0,cumsum(ns[i,]))[j:(j+1)] + c(1,0)
+        bar.matrix[idx[1]:idx[2]]=j
+        y.b = apply(bar.matrix==j,1,function(v) range(which(v))) - c(1,0)
+        y.b[is.infinite(y.b)]=0
+        y.b = c(y.b[1,], rev(y.b[2,]))
+        y.c = 2*(2 - i - .5)*rep(y.b,each=2)
+        x.c = seq(x - bar.width/2, x + bar.width/2, bar.width/bar.width.n)
+        x.c = c(x.c[1],  rep(x.c[-c(1,bar.width.n+1)],each=2) ,x.c[bar.width.n+1])
+        x.c = c(x.c,rev(x.c))
+        polygon(x.c,y.c,border=line.col[i],col=bar.col[i,j], lwd = line.wd)
+      }
       # Add percentage
       if(!is.null(pct)){
         if(i == 1){
@@ -79,6 +92,8 @@ add.pip.bar <- function(x, ns,
   }
   
   
+  if(is.na(scale.to) | is.null(scale.to))
+    invisible(NULL)
   
   for(i in 1:2){
     ## Draw segments

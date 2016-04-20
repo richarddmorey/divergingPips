@@ -21,6 +21,7 @@
 #' @param stacked If TRUE, create a stacked bar plot (see details)
 #' @param hist If TRUE, create a histogram-style bar chart (see details)
 #' @param top.cex The magnification of the top labels relative to par(cex.axis)
+#' @param perc.ref vector determining which bars are pure percentage bars, and bars to which to normalize
 #' 
 #' @return Returns NULL invisibly.
 #' @export
@@ -79,13 +80,33 @@ diverging_pip_plot <- function(ns, bar.width = .3,
                             cluster.width=.3, panel.lty=0,
                             add.pct = FALSE, pct.round = 0,
                             pct.cex = 1,
-                            stacked=FALSE, hist=FALSE,top.cex = 1)
+                            stacked=FALSE, hist=FALSE,top.cex = 1,perc.ref=NULL)
 {
-  
+
   if(length(dim(ns))>2){
     bar.col = matrix(bar.col,2,dim(ns)[3])
+    if(is.null(perc.ref)){
+      perc.ref = rep(NA, dim(ns)[3])  
+    }else if(length(perc.ref) != dim(ns)[3]){
+      stop("Length of perc.ref must be equal to dim(ns)[3].")
+    }
+  }else{
+    if(!is.null(perc.ref)){
+      stop("No comparison bars specified; perc.ref nust be NULL.")  
+    } 
   }
   
+  if( hist & !is.null(perc.ref) )
+    stop("Percentage bars not implemented for histogram-style plots.")
+
+  if(!is.null(perc.ref) & any(!is.na(perc.ref[perc.ref[!is.na(perc.ref)]]))){
+    stop("Every non-NA element in perc.ref must refer to an NA element.")
+  }
+  
+  if(!is.null(perc.ref) & any(perc.ref[!is.na(perc.ref)] > length(perc.ref))){
+    stop("At least one element of perc.ref > length(perc.ref).")
+  }
+    
   if(add.pct){
     if(stacked){
       stop("Percentages can only be added for non-stacked plots.")
@@ -116,16 +137,31 @@ diverging_pip_plot <- function(ns, bar.width = .3,
   if(sym){
     if(stacked){
       ymax = max(ceiling(apply(ns,c(1,2),sum)/bar.width.n))
-    }else{
+    }else if( is.null(perc.ref) | (length(dim(ns)) < 3 ) ){
       ymax = max(ceiling(ns/bar.width.n))
+    }else{
+      ns.tmp2 = ns.tmp = ns
+      ns.tmp2[1,,!is.na(perc.ref)] =
+        ns.tmp[1,,!is.na(perc.ref)] * colSums(ns.tmp[,,perc.ref[!is.na(perc.ref)]])
+      ns.tmp2[2,,!is.na(perc.ref)] =
+        ns.tmp[2,,!is.na(perc.ref)] * colSums(ns.tmp[,,perc.ref[!is.na(perc.ref)]])
+      ymax = max(ceiling(ns.tmp/bar.width.n))
     }
   }else{
     if(stacked){
       ymax = rev(apply( ceiling(apply(ns,c(1,2),sum)/bar.width.n), 1, max ))
-    }else{
+    }else if( is.null(perc.ref) | (length(dim(ns)) < 3 ) ){
       ymax = rev(apply( ceiling(ns/bar.width.n), 1, max ))
+    }else{
+      ns.tmp2 = ns.tmp = ns
+      ns.tmp2[1,,!is.na(perc.ref)] =
+        ns.tmp[1,,!is.na(perc.ref)] * colSums(ns.tmp[,,perc.ref[!is.na(perc.ref)]])
+      ns.tmp2[2,,!is.na(perc.ref)] =
+        ns.tmp[2,,!is.na(perc.ref)] * colSums(ns.tmp[,,perc.ref[!is.na(perc.ref)]])
+      ymax = rev(apply( ceiling(ns.tmp2/bar.width.n), 1, max ))
     }
   }
+  
   if(add.pct){
     ylims = c(-1,1)*ymax*1.15
   }else{
@@ -160,7 +196,7 @@ diverging_pip_plot <- function(ns, bar.width = .3,
                   line.col, 
                   bar.col[,j+1],
                   pct = pcts[,i,j+1],
-                  line.wd = line.wd, top.cex = top.cex, pct.cex = pct.cex)
+                  line.wd = line.wd, top.cex = top.cex, pct.cex = pct.cex, scale.to = sum(ns[,i,perc.ref[j+1]]))
           text(i - cluster.width/2 + j*cluster.width/(n.in.cluster-1),
                par()$usr[4],
                dimnames(ns)[[3]][j+1],cex=par()$cex.axis*top.cex,adj=c(.5,1.2))
