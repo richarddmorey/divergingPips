@@ -29,12 +29,6 @@ add.pip.bar <- function(x, ns,
     dim(ns) = c(2,length(ns)/2)
   }
   
-  if(!is.null(scale.to) & !is.na(scale.to)){
-    if(any( (ns > 1) | (ns < 0) )){
-      stop("For percentage bars, data must be proportions.")
-    }
-  }
-
   if(hist & dim(ns)[2]>1){
     return(add.pip.bar.hist(x, ns, 
                              bar.width,
@@ -46,6 +40,11 @@ add.pip.bar <- function(x, ns,
                              top.cex = top.cex, ...))
   } 
   
+  if(!is.null(scale.to) & !is.na(scale.to)){
+    if(any( (ns > 1) | (ns < 0) )){
+      stop("For percentage bars, data must be proportions.")
+    }
+  }
   
   if(length(dim(ns))>2){
     bar.col = matrix(bar.col,2,dim(ns)[3])

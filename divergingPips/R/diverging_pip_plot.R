@@ -83,6 +83,9 @@ diverging_pip_plot <- function(ns, bar.width = .3,
                             stacked=FALSE, hist=FALSE,top.cex = 1,perc.ref=NULL)
 {
 
+  if( hist & !is.null(perc.ref) )
+    stop("Percentage bars not implemented for histogram-style plots.")
+  
   if(length(dim(ns))>2){
     bar.col = matrix(bar.col,2,dim(ns)[3])
     if(is.null(perc.ref)){
@@ -96,9 +99,6 @@ diverging_pip_plot <- function(ns, bar.width = .3,
     } 
   }
   
-  if( hist & !is.null(perc.ref) )
-    stop("Percentage bars not implemented for histogram-style plots.")
-
   if(!is.null(perc.ref) & any(!is.na(perc.ref[perc.ref[!is.na(perc.ref)]]))){
     stop("Every non-NA element in perc.ref must refer to an NA element.")
   }
