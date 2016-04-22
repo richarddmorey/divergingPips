@@ -40,7 +40,10 @@ add.pip.bar <- function(x, ns,
                              top.cex = top.cex, ...))
   } 
   
-  if(!is.null(scale.to) & !is.na(scale.to)){
+  if(is.null(scale.to)) scale.to=NA
+  
+  if(!is.null(scale.to))
+     if(!is.na(scale.to)){
     if(any( (ns > 1) | (ns < 0) )){
       stop("For percentage bars, data must be proportions.")
     }
