@@ -13,6 +13,7 @@
 #' @param box Create box around entire plot?
 #' @param tick.every Make a y axis tick after this many pip rows
 #' @param sym Should the y axis by symmetric around 0?
+#' @param set.ymax a vector of length 2 to determine the max y values below and above. If NULL, automatic. Overrides `sym`.
 #' @param cluster.width For side-by-side plots, width of all bars together in x axis units
 #' @param panel.lty The line type for dividing lines across bars/clusters
 #' @param add.pct Add percentages to tops of bars? (for non-stacked plots)
@@ -77,6 +78,7 @@ diverging_pip_plot <- function(ns, bar.width = .3,
                             line.wd = 1,
                             bar.col = c("red", "blue"),
                             xlab="", box=TRUE, tick.every=5, sym=FALSE,
+                            set.ymax = NULL,
                             cluster.width=.3, panel.lty=0,
                             add.pct = FALSE, pct.round = 0,
                             pct.cex = 1,
@@ -160,6 +162,11 @@ diverging_pip_plot <- function(ns, bar.width = .3,
         ns.tmp[2,,!is.na(perc.ref)] * colSums(ns.tmp[,,perc.ref[!is.na(perc.ref)]])
       ymax = rev(apply( ceiling(ns.tmp2/bar.width.n), 1, max ))
     }
+  }
+  
+  if(!is.null(set.ymax)){
+    stopifnot(length(set.ymax)==2)
+    ymax = set.ymax / bar.width.n
   }
   
   if(add.pct){
